@@ -2,7 +2,6 @@ module Course.Optional where
 
 import Prelude
 
-import Utils.Error (error)
 
 -- | The `Optional` data type contains 0 or 1 value.
 --
@@ -16,6 +15,7 @@ instance showExactlyOne :: Show a => Show (Optional a) where
     show (Full a) = show a
     show Empty = ""
 
+
 -- -- | Map the given function on the possible value.
 -- --
 -- -- >>> mapOptional (+1) Empty
@@ -24,7 +24,8 @@ instance showExactlyOne :: Show a => Show (Optional a) where
 -- -- >>> mapOptional (+1) (Full 8)
 -- -- Full 9
 mapOptional :: forall a b. (a -> b) -> Optional a -> Optional b
-mapOptional = error "todo: Course.Optional#mapOptional"
+mapOptional atobfn (Full a) = Full (atobfn (a))
+mapOptional _ Empty = Empty
 
 -- -- | Bind the given function on the possible value.
 -- --
@@ -36,8 +37,9 @@ mapOptional = error "todo: Course.Optional#mapOptional"
 -- --
 -- -- >>> bindOptional (\n -> if even n then Full (n - 1) else Full (n + 1)) (Full 9)
 -- -- Full 10
--- bindOptional :: forall a b. (a -> Optional b) -> Optional a -> Optional b
--- bindOptional = error "todo: Course.Optional#bindOptional"
+bindOptional :: forall a b. (a -> Optional b) -> Optional a -> Optional b
+bindOptional atooptb (Full a) = atooptb a
+bindOptional _ Empty = Empty
 
 -- -- | Return the possible value if it exists; otherwise, the second argument.
 -- --
@@ -46,10 +48,11 @@ mapOptional = error "todo: Course.Optional#mapOptional"
 -- --
 -- -- >>> Empty ?? 99
 -- -- 99
--- optional :: forall a. Optional a -> a -> a
--- optional = error "todo: Course.Optional#(??)"
+optional :: forall a. Optional a -> a -> a
+optional (Full a) a' =  a
+optional Empty a' = a'
 
--- infixl 12 optional as ??     
+infixl 12 optional as ??
 
 -- -- | Try the first optional for a value. If it has a value, use it; otherwise,
 -- -- use the second value.
@@ -65,10 +68,12 @@ mapOptional = error "todo: Course.Optional#mapOptional"
 -- --
 -- -- >>> Empty <+> Empty
 -- -- Empty
--- eitherOptional :: forall a. Optional a -> Optional a -> Optional a
--- eitherOptional = error "todo: Course.Optional#(<+>)"  
+eitherOptional :: forall a. Optional a -> Optional a -> Optional a
+eitherOptional (Full a) _ = Full a
+eitherOptional Empty (Full a) = Full a
+eitherOptional _ _ = Empty
 
--- infixl 12 eitherOptional as <+>
+infixl 12 eitherOptional as <+>
 
 -- applyOptional :: Optional (a -> b) -> Optional a -> Optional b
 -- applyOptional f a = bindOptional (\f' -> mapOptional f' a) f
